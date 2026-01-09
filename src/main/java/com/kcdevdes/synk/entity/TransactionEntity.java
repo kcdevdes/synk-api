@@ -3,9 +3,13 @@ package com.kcdevdes.synk.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -21,10 +25,10 @@ public class TransactionEntity {
     private TransactionType type;
     private Double amount;
 
-    @CreatedDate
-    private Date occurredAt;
-    @LastModifiedDate
-    private Date updatedAt;
+    @CreationTimestamp
+    private Instant occurredAt;
+    @UpdateTimestamp
+    private Instant updatedAt;
 
     private String merchant;
     private String description;
@@ -41,4 +45,6 @@ public class TransactionEntity {
                 ", description='" + description + '\'' +
                 '}';
     }
+
+
 }
