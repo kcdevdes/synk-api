@@ -5,6 +5,7 @@ import com.kcdevdes.synk.repository.TransactionRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TransactionService {
@@ -22,5 +23,26 @@ public class TransactionService {
 
     public List<TransactionEntity> findAll() {
         return transactionRepository.findAll();
+    }
+
+    public Optional<TransactionEntity> findById(Long id) {
+        return transactionRepository.findById(id);
+    }
+
+    public Optional<TransactionEntity> updateById(Long id, TransactionEntity updated) {
+        Optional<TransactionEntity> existingEntity = this.findById(id);
+        if (existingEntity.isPresent()) {
+            TransactionEntity unwrapped = existingEntity.get();
+
+            // updatable indices: amount, type, merchant, description
+            unwrapped.setAmount(updated.getAmount());
+            unwrapped.setType(updated.getType());
+            unwrapped.setMerchant(updated.getMerchant());
+            unwrapped.setDescription(updated.getDescription());
+
+            return Optional.of(transactionRepository.save(unwrapped));
+        } else {
+            return Optional.empty();
+        }
     }
 }
