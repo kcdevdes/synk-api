@@ -4,6 +4,7 @@ import com.kcdevdes.synk.entity.TransactionEntity;
 import com.kcdevdes.synk.repository.TransactionRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,15 +35,59 @@ public class TransactionService {
         if (existingEntity.isPresent()) {
             TransactionEntity unwrapped = existingEntity.get();
 
+            boolean changed = false;
+
             // updatable indices: amount, type, merchant, description
-            unwrapped.setAmount(updated.getAmount());
-            unwrapped.setType(updated.getType());
-            unwrapped.setMerchant(updated.getMerchant());
-            unwrapped.setDescription(updated.getDescription());
+            // Only changed values will be applied
+            if (updated.getAmount() != null && !java.util.Objects.equals(updated.getAmount(), unwrapped.getAmount())) {
+                unwrapped.setAmount(updated.getAmount());
+                changed = true;
+            }
+            if (updated.getType() != null && !java.util.Objects.equals(updated.getType(), unwrapped.getType())) {
+                unwrapped.setType(updated.getType());
+                changed = true;
+            }
+            if (updated.getMerchant() != null && !java.util.Objects.equals(updated.getMerchant(), unwrapped.getMerchant())) {
+                unwrapped.setMerchant(updated.getMerchant());
+                changed = true;
+            }
+            if (updated.getDescription() != null && !java.util.Objects.equals(updated.getDescription(), unwrapped.getDescription())) {
+                unwrapped.setDescription(updated.getDescription());
+                changed = true;
+            }
+
+            // If nothing changed, avoid an unnecessary write. Return the existing entity as-is.
+            if (!changed) {
+                return Optional.of(unwrapped);
+            }
 
             return Optional.of(transactionRepository.save(unwrapped));
         } else {
             return Optional.empty();
         }
+    }
+
+    public Optional<TransactionEntity> deleteById(Long id) {
+        Optional<TransactionEntity> existingEntity = this.findById(id);
+
+        if (existingEntity.isEmpty()) {
+            return Optional.empty();
+        }
+
+        this.transactionRepository.deleteById(id);
+
+        return existingEntity;
+    }
+
+    public List<TransactionEntity> searchTransactionsByMerchant(String merchantName) {
+        ArrayList<TransactionEntity> found = new ArrayList<>();
+        List<TransactionEntity> original = this.findAll();
+        for (TransactionEntity each : original) {
+            if (each.getMerchant().toLowerCase().contains(merchantName.toLowerCase())) {
+                found.add(each);
+            }
+        }
+
+        return found;
     }
 }
