@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 import java.util.Optional;
 import java.util.List;
-import java.util.stream.StreamSupport;
 
 @RestController
 @RequestMapping("/api/transactions")
@@ -84,6 +83,17 @@ public class TransactionController {
         }
 
         List<TransactionEntity> results = this.transactionService.searchTransactionsByMerchant(query);
+
+        return ResponseEntity.ok().body(results);
+    }
+
+    @GetMapping("/filter")
+    public ResponseEntity<?> filterTransactions(@RequestParam("query") String query) {
+        if (query == null || query.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        List<TransactionEntity> results = this.transactionService.filterTransactionByType(query);
 
         return ResponseEntity.ok().body(results);
     }

@@ -1,7 +1,9 @@
 package com.kcdevdes.synk.service;
 
 import com.kcdevdes.synk.entity.TransactionEntity;
+import com.kcdevdes.synk.entity.TransactionType;
 import com.kcdevdes.synk.repository.TransactionRepository;
+import jakarta.servlet.Filter;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -89,5 +91,21 @@ public class TransactionService {
         }
 
         return found;
+    }
+
+    public List<TransactionEntity> filterTransactionByType(String type) {
+        ArrayList<TransactionEntity> filtered = new ArrayList<>();
+
+        try {
+            for (TransactionEntity each: this.findAll()) {
+                if (each.getType() == TransactionType.valueOf(type.toUpperCase())) {
+                    filtered.add(each);
+                }
+            }
+
+            return filtered;
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
