@@ -1,17 +1,13 @@
 package com.kcdevdes.synk.entity;
 
+import com.kcdevdes.synk.entity.type.PaymentMethod;
+import com.kcdevdes.synk.entity.type.TransactionType;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.Date;
 
 @Entity
 @Table(name = "transactions")
@@ -31,9 +27,6 @@ public class TransactionEntity {
     private String merchant;
 
     /// Currency Details ///
-
-    @Column(nullable = false)
-    private Long userid; // UserEntity와 @ManyToOne 관게
 
     @Column(nullable = false, length = 3) // ISO 4217
     private String currency = "USD";
@@ -81,4 +74,8 @@ public class TransactionEntity {
 
     @Column(length = 64)
     private String category;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserEntity user;
 }
