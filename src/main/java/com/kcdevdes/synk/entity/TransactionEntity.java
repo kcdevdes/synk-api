@@ -3,6 +3,9 @@ package com.kcdevdes.synk.entity;
 import com.kcdevdes.synk.entity.type.PaymentMethod;
 import com.kcdevdes.synk.entity.type.TransactionType;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -11,6 +14,9 @@ import java.time.Instant;
 
 @Entity
 @Table(name = "transactions")
+@Getter
+@Setter
+@NoArgsConstructor
 public class TransactionEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,9 +52,6 @@ public class TransactionEntity {
     @Column(length = 20)
     private PaymentMethod paymentMethod;
 
-    @Column
-    private Long accountId; // AccountEntity 연결
-
     ///  TimeStamps ///
 
     @CreationTimestamp
@@ -78,4 +81,8 @@ public class TransactionEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "account_id")
+    private AccountEntity account;
 }

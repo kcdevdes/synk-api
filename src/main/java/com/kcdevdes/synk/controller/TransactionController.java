@@ -1,7 +1,7 @@
 package com.kcdevdes.synk.controller;
 
 import com.kcdevdes.synk.entity.TransactionEntity;
-import com.kcdevdes.synk.entity.TransactionType;
+import com.kcdevdes.synk.entity.type.TransactionType;
 import com.kcdevdes.synk.dto.request.TransactionCreateDTO;
 import com.kcdevdes.synk.dto.request.TransactionUpdateDTO;
 import com.kcdevdes.synk.service.TransactionService;
@@ -24,9 +24,9 @@ public class TransactionController {
     }
 
     @PostMapping("")
-    public ResponseEntity<?>  addNewTransaction(@Valid @RequestBody TransactionCreateDTO form) {
+    public ResponseEntity<?>  addNewTransaction(@Valid @RequestBody TransactionCreateDTO dto) {
         try {
-            TransactionEntity newTransaction = convert(form);
+            TransactionEntity newTransaction = convert(dto);
 
             TransactionEntity saved = this.transactionService.save(newTransaction);
             return ResponseEntity.status(HttpStatus.CREATED).body(saved);
@@ -54,11 +54,11 @@ public class TransactionController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateTransaction(@PathVariable("id") Long id, @RequestBody TransactionUpdateDTO form) {
-        if (form == null) {
+    public ResponseEntity<?> updateTransaction(@PathVariable("id") Long id, @RequestBody TransactionUpdateDTO dto) {
+        if (dto == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "empty body request"));
         }
-        Optional<TransactionEntity> result = this.transactionService.updateById(id, convert(form));
+        Optional<TransactionEntity> result = this.transactionService.updateById(id, convert(dto));
 
         return result
                 .map(ResponseEntity::<Object>ok)
@@ -98,29 +98,25 @@ public class TransactionController {
         return ResponseEntity.ok().body(results);
     }
 
-    private TransactionEntity convert(TransactionCreateDTO form) {
+    private TransactionEntity convert(TransactionCreateDTO dto) {
         TransactionEntity entity = new TransactionEntity();
-        entity.setType(TransactionType.valueOf(form.getType()));
-        entity.setAmount(form.getAmount());
-        entity.setMerchant(form.getMerchant());
-        entity.setDescription(form.getDescription());
+        entity.setType(TransactionType.valueOf(dto.getType()));
+        entity.setMerchant(dto.getMerchant());
+        entity.setDescription(dto.getDescription());
         return entity;
     }
 
-    private TransactionEntity convert(TransactionUpdateDTO form) {
+    private TransactionEntity convert(TransactionUpdateDTO dto) {
         TransactionEntity entity = new TransactionEntity();
 
-        if (form.getType() != null) {
-            entity.setType(TransactionType.valueOf(form.getType()));
+        if (dto.getType() != null) {
+            entity.setType(TransactionType.valueOf(dto.getType()));
         }
-        if (form.getAmount() != null) {
-            entity.setAmount(form.getAmount());
+        if (dto.getMerchant() != null) {
+            entity.setMerchant(dto.getMerchant());
         }
-        if (form.getMerchant() != null) {
-            entity.setMerchant(form.getMerchant());
-        }
-        if (form.getDescription() != null) {
-            entity.setDescription(form.getDescription());
+        if (dto.getDescription() != null) {
+            entity.setDescription(dto.getDescription());
         }
 
         return entity;

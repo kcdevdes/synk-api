@@ -1,7 +1,7 @@
 package com.kcdevdes.synk.service;
 
 import com.kcdevdes.synk.entity.TransactionEntity;
-import com.kcdevdes.synk.entity.TransactionType;
+import com.kcdevdes.synk.entity.type.TransactionType;
 import com.kcdevdes.synk.repository.TransactionRepository;
 import org.springframework.stereotype.Service;
 
