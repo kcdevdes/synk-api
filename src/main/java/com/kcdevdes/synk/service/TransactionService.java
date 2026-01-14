@@ -3,7 +3,6 @@ package com.kcdevdes.synk.service;
 import com.kcdevdes.synk.entity.TransactionEntity;
 import com.kcdevdes.synk.entity.TransactionType;
 import com.kcdevdes.synk.repository.TransactionRepository;
-import jakarta.servlet.Filter;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;

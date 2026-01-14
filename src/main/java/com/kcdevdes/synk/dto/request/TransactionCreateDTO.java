@@ -1,4 +1,4 @@
-package com.kcdevdes.synk.form;
+package com.kcdevdes.synk.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class TransactionCreateForm {
+public class TransactionCreateDTO {
     @NotBlank
     public String type;
 

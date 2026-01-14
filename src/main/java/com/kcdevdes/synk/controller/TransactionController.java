@@ -2,8 +2,8 @@ package com.kcdevdes.synk.controller;
 
 import com.kcdevdes.synk.entity.TransactionEntity;
 import com.kcdevdes.synk.entity.TransactionType;
-import com.kcdevdes.synk.form.TransactionCreateForm;
-import com.kcdevdes.synk.form.TransactionUpdateForm;
+import com.kcdevdes.synk.dto.request.TransactionCreateDTO;
+import com.kcdevdes.synk.dto.request.TransactionUpdateDTO;
 import com.kcdevdes.synk.service.TransactionService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -24,7 +24,7 @@ public class TransactionController {
     }
 
     @PostMapping("")
-    public ResponseEntity<?>  addNewTransaction(@Valid @RequestBody TransactionCreateForm form) {
+    public ResponseEntity<?>  addNewTransaction(@Valid @RequestBody TransactionCreateDTO form) {
         try {
             TransactionEntity newTransaction = convert(form);
 
@@ -54,7 +54,7 @@ public class TransactionController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateTransaction(@PathVariable("id") Long id, @RequestBody TransactionUpdateForm form) {
+    public ResponseEntity<?> updateTransaction(@PathVariable("id") Long id, @RequestBody TransactionUpdateDTO form) {
         if (form == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "empty body request"));
         }
@@ -98,7 +98,7 @@ public class TransactionController {
         return ResponseEntity.ok().body(results);
     }
 
-    private TransactionEntity convert(TransactionCreateForm form) {
+    private TransactionEntity convert(TransactionCreateDTO form) {
         TransactionEntity entity = new TransactionEntity();
         entity.setType(TransactionType.valueOf(form.getType()));
         entity.setAmount(form.getAmount());
@@ -107,7 +107,7 @@ public class TransactionController {
         return entity;
     }
 
-    private TransactionEntity convert(TransactionUpdateForm form) {
+    private TransactionEntity convert(TransactionUpdateDTO form) {
         TransactionEntity entity = new TransactionEntity();
 
         if (form.getType() != null) {

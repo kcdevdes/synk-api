@@ -1,4 +1,4 @@
-package com.kcdevdes.synk.entity;
+package com.kcdevdes.synk.entity.type;
 
 public enum TransactionType {
     INCOME,
