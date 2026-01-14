@@ -1,8 +1,6 @@
 package com.kcdevdes.synk.dto.response;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.Instant;
 
@@ -25,7 +23,6 @@ import java.time.Instant;
 
 @Getter
 @Setter
-@NoArgsConstructor
 public class UserDTO {
     private Long id;
     private String email;

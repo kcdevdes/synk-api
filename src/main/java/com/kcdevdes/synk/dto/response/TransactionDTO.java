@@ -1,8 +1,6 @@
 package com.kcdevdes.synk.dto.response;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -31,7 +29,6 @@ import java.time.Instant;
 
 @Getter
 @Setter
-@NoArgsConstructor
 public class TransactionDTO {
     private Long id;
     private String type;
