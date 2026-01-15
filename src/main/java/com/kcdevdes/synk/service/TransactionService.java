@@ -8,7 +8,6 @@ import com.kcdevdes.synk.exception.custom.ResourceNotFoundException;
 import com.kcdevdes.synk.mapper.TransactionMapper;
 import com.kcdevdes.synk.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,39 +15,60 @@ import java.time.Instant;
 import java.util.List;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class TransactionService {
 
     private final TransactionRepository transactionRepository;
 
+    /**
+     * Save Transaction
+     * @param entity
+     * @return
+     */
     @Transactional
     public TransactionEntity save(TransactionEntity entity) {
-        log.info("Creating transaction: merchant={}, amount={}",
-                entity.getMerchant(), entity.getAmount());
-
         return transactionRepository.save(entity);
     }
 
+    /**
+     * Find All Transactions
+     * @return
+     */
     public List<TransactionEntity> findAll() {
         return transactionRepository.findByDeletedFalse();
     }
 
+    /**
+     * Find Transaction By Id
+     * If not found, it will throw ResourceNotFoundException
+     * @param id
+     * @return
+     */
     public TransactionEntity findById(Long id) {
         return transactionRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.transaction(id));
     }
 
+    /**
+     * Update Transaction By Id
+     * @param id
+     * @param dto
+     * @return
+     */
     @Transactional
     public TransactionEntity updateById(Long id, TransactionUpdateDTO dto) {
         TransactionEntity existing = findById(id);
         TransactionMapper.updateEntity(existing, dto);
-        log.info("Updating transaction: id={}", id);
 
         return transactionRepository.save(existing);
     }
 
+    /**
+     * Delete Transaction By Id
+     * It does not perform the actual deletion from the database
+     * @param id
+     */
     @Transactional
     public void deleteById(Long id) {
         TransactionEntity existing = findById(id);
@@ -58,19 +78,28 @@ public class TransactionService {
         existing.setDeletedAt(Instant.now());
 
         transactionRepository.save(existing);
-
-        log.info("Soft deleted transaction: id={}", id);
     }
 
+    /**
+     * Search Transactions By Merchant
+     * If merchant is empty, it will throw InvalidInputException
+     * @param merchant
+     * @return
+     */
     public List<TransactionEntity> searchTransactionsByMerchant(String merchant) {
         if (merchant == null || merchant.isBlank()) {
             throw InvalidInputException.currency("Merchant query cannot be empty");
         }
 
-        log.debug("Searching transactions by merchant: {}", merchant);
         return transactionRepository.findByMerchantContainingIgnoreCase(merchant);
     }
 
+    /**
+     * Filter Transactions By Type
+     * If typeString is empty, it will throw InvalidInputException
+     * @param typeString
+     * @return
+     */
     public List<TransactionEntity> filterTransactionByType(String typeString) {
         if (typeString == null || typeString.isBlank()) {
             throw InvalidInputException.transactionType("Transaction type cannot be empty");
@@ -83,18 +112,33 @@ public class TransactionService {
             throw InvalidInputException.transactionType(typeString);
         }
 
-        log.debug("Filtering transactions by type: {}", type);
         return transactionRepository.findByType(type);
     }
 
+    /**
+     * Find Transactions By User Id
+     * @param userId
+     * @return
+     */
     public List<TransactionEntity> findByUserId(Long userId) {
         return transactionRepository.findByUserIdAndDeletedFalse(userId);
     }
 
+    /**
+     * Find Transactions By Account Id
+     * @param accountId
+     * @return
+     */
     public List<TransactionEntity> findByAccountId(Long accountId) {
         return transactionRepository.findByAccountId(accountId);
     }
 
+    /**
+     * Find Transactions By User Id And Type
+     * @param userId
+     * @param type
+     * @return
+     */
     public List<TransactionEntity> findByUserIdAndType(Long userId, TransactionType type) {
         return transactionRepository.findByUserIdAndType(userId, type);
     }

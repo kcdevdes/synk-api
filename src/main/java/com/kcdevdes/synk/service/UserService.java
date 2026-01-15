@@ -1,10 +1,12 @@
 package com.kcdevdes.synk.service;
 
+import com.kcdevdes.synk.dto.request.UserUpdateDTO;
 import com.kcdevdes.synk.entity.UserEntity;
 import com.kcdevdes.synk.exception.ErrorCode;
 import com.kcdevdes.synk.exception.custom.DuplicateResourceException;
 import com.kcdevdes.synk.exception.custom.InvalidInputException;
 import com.kcdevdes.synk.exception.custom.ResourceNotFoundException;
+import com.kcdevdes.synk.mapper.UserMapper;
 import com.kcdevdes.synk.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,21 +21,39 @@ public class UserService {
 
     private final UserRepository userRepository;
 
+    /**
+     * Get User By Id
+     * Otherwise, it will throw ResourceNotFoundException
+     * @param userId
+     * @return
+     */
     @Transactional(readOnly = true)
     public UserEntity getUserById(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> ResourceNotFoundException.user(userId));
     }
 
+    /**
+     * Get User By Email
+     * Otherwise, it will throw ResourceNotFoundException
+     * @param email
+     * @return
+     */
     @Transactional(readOnly = true)
     public UserEntity getUserByEmail(String email) {
         return userRepository.findByEmailAndDeletedFalse(email)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        com.kcdevdes.synk.exception.ErrorCode.USER_NOT_FOUND,
+                        ErrorCode.USER_NOT_FOUND,
                         "User not found with email: " + email
                 ));
     }
 
+    /**
+     * Get User By Username
+     * Otherwise, it will throw ResourceNotFoundException
+     * @param username
+     * @return
+     */
     @Transactional(readOnly = true)
     public UserEntity getUserByUsername(String username) {
         return userRepository.findByUsernameAndDeletedFalse(username)
@@ -43,11 +63,21 @@ public class UserService {
                 ));
     }
 
+    /**
+     * Get All Users
+     * @return
+     */
     @Transactional(readOnly = true)
     public List<UserEntity> getAllUsers() {
         return userRepository.findAll();
     }
 
+    /**
+     * Create a new user record by the given user details
+     * If email or username already exists, it will throw DuplicateResourceException
+     * @param user
+     * @return
+     */
     @Transactional
     public UserEntity createUser(UserEntity user) {
         if (userRepository.existsByEmail(user.getEmail())) {
@@ -61,51 +91,25 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    /**
+     * Update user details by the given user details
+     * If email or username already exists, it will throw DuplicateResourceException
+     * @param userId
+     * @param dto
+     * @return
+     */
     @Transactional
-    public UserEntity updateUser(Long userId, UserEntity userDetails) {
+    public UserEntity updateUser(Long userId, UserUpdateDTO dto) {
         UserEntity user = getUserById(userId);
-
-        if (userDetails.getEmail() != null && !userDetails.getEmail().equals(user.getEmail())) {
-            if (userRepository.existsByEmail(userDetails.getEmail())) {
-                throw DuplicateResourceException.email(userDetails.getEmail());
-            }
-            user.setEmail(userDetails.getEmail());
-        }
-
-        if (userDetails.getUsername() != null && !userDetails.getUsername().equals(user.getUsername())) {
-            if (userRepository.existsByUsername(userDetails.getUsername())) {
-                throw DuplicateResourceException.username(userDetails.getUsername());
-            }
-            user.setUsername(userDetails.getUsername());
-        }
-
-        if (userDetails.getFirstName() != null) {
-            user.setFirstName(userDetails.getFirstName());
-        }
-
-        if (userDetails.getLastName() != null) {
-            user.setLastName(userDetails.getLastName());
-        }
-
-        if (userDetails.getMobile() != null) {
-            user.setMobile(userDetails.getMobile());
-        }
-
-        if (userDetails.getDefaultCurrency() != null) {
-            user.setDefaultCurrency(userDetails.getDefaultCurrency());
-        }
-
-        if (userDetails.getLocale() != null) {
-            user.setLocale(userDetails.getLocale());
-        }
-
-        if (userDetails.getTimezone() != null) {
-            user.setTimezone(userDetails.getTimezone());
-        }
-
+        UserMapper.updateEntity(user, dto);
         return userRepository.save(user);
     }
 
+    /**
+     * Soft Delete User
+     * It does not perform the actual deletion from the database
+     * @param userId
+     */
     @Transactional
     public void deleteUser(Long userId) {
         UserEntity user = getUserById(userId);
@@ -115,6 +119,11 @@ public class UserService {
         userRepository.save(user);
     }
 
+    /**
+     * Verify User Email
+     * It does not perform the actual verification from the database
+     * @param userId
+     */
     @Transactional
     public void verifyEmail(Long userId) {
         UserEntity user = getUserById(userId);
@@ -122,6 +131,12 @@ public class UserService {
         userRepository.save(user);
     }
 
+    /**
+     * Update Login Attempts
+     * If it reaches maximum attempts (5 times), it will lock the user for 30 minutes
+     * @param userId
+     * @param success
+     */
     @Transactional
     public void updateLoginAttempts(Long userId, boolean success) {
         UserEntity user = getUserById(userId);
@@ -142,6 +157,12 @@ public class UserService {
         userRepository.save(user);
     }
 
+    /**
+     * Generate Password Reset Token
+     * @param email
+     * @param token
+     * @param expiresAt
+     */
     @Transactional
     public void generatePasswordResetToken(String email, String token, Instant expiresAt) {
         UserEntity user = getUserByEmail(email);
@@ -150,6 +171,10 @@ public class UserService {
         userRepository.save(user);
     }
 
+    /**
+     * Validate Password Reset Token
+     * If token is expired or invalid, it will throw InvalidInputException
+     */
     @Transactional
     public UserEntity validatePasswordResetToken(String token) {
         UserEntity user = userRepository.findByResetPasswordToken(token)
@@ -169,6 +194,11 @@ public class UserService {
         return user;
     }
 
+    /**
+     * Reset Password
+     * @param token
+     * @param newPassword
+     */
     @Transactional
     public void resetPassword(String token, String newPassword) {
         UserEntity user = validatePasswordResetToken(token);

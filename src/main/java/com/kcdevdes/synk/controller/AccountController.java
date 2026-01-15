@@ -58,9 +58,7 @@ public class AccountController {
             @PathVariable Long accountId,
             @PathVariable Long userId,
             @Valid @RequestBody AccountUpdateDTO updateDTO) {
-        AccountEntity entity = new AccountEntity();
-        AccountMapper.updateEntity(entity, updateDTO);
-        AccountEntity updated = accountService.updateAccount(accountId, userId, entity);
+        AccountEntity updated = accountService.updateAccount(accountId, userId, updateDTO);
         return ResponseEntity.ok(AccountMapper.toDTO(updated));
     }
 

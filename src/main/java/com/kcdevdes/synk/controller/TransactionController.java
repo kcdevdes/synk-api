@@ -5,6 +5,7 @@ import com.kcdevdes.synk.dto.request.TransactionUpdateDTO;
 import com.kcdevdes.synk.dto.response.TransactionDTO;
 import com.kcdevdes.synk.entity.TransactionEntity;
 import com.kcdevdes.synk.entity.type.TransactionType;
+import com.kcdevdes.synk.exception.custom.InvalidInputException;
 import com.kcdevdes.synk.mapper.TransactionMapper;
 import com.kcdevdes.synk.service.TransactionService;
 import jakarta.validation.Valid;
@@ -71,7 +72,7 @@ public class TransactionController {
 
     @GetMapping("/search")
     public ResponseEntity<List<TransactionDTO>> searchTransactions(
-            @RequestParam(required = true) String query
+            @RequestParam String query
     ) {
         List<TransactionEntity> results = transactionService.searchTransactionsByMerchant(query);
         List<TransactionDTO> dtos = TransactionMapper.toDTOList(results);
@@ -81,7 +82,7 @@ public class TransactionController {
 
     @GetMapping("/filter")
     public ResponseEntity<List<TransactionDTO>> filterTransactions(
-            @RequestParam(required = true) String type
+            @RequestParam String type
     ) {
         List<TransactionEntity> results = transactionService.filterTransactionByType(type);
         List<TransactionDTO> dtos = TransactionMapper.toDTOList(results);
@@ -116,9 +117,9 @@ public class TransactionController {
     ) {
         TransactionType transactionType;
         try {
-            transactionType = com.kcdevdes.synk.entity.type.TransactionType.valueOf(type.toUpperCase());
+            transactionType = TransactionType.valueOf(type.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw com.kcdevdes.synk.exception.custom.InvalidInputException.transactionType(type);
+            throw InvalidInputException.transactionType(type);
         }
 
         List<TransactionEntity> entities = transactionService.findByUserIdAndType(userId, transactionType);
