@@ -15,18 +15,10 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * 전역 예외 처리
- * - 모든 Controller에서 발생하는 예외를 중앙에서 처리
- * - 일관된 ErrorResponse 반환
- */
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    /**
-     * 커스텀 비즈니스 예외 처리
-     */
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ErrorResponse> handleBusinessException(
             BusinessException ex,
@@ -50,9 +42,6 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
-    /**
-     * Validation 실패 처리 (@Valid, @Validated)
-     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(
             MethodArgumentNotValidException ex,
@@ -82,9 +71,6 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
-    /**
-     * IllegalArgumentException 처리
-     */
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
             IllegalArgumentException ex,
@@ -106,9 +92,6 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
-    /**
-     * 예상하지 못한 예외 처리
-     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(
             Exception ex,
