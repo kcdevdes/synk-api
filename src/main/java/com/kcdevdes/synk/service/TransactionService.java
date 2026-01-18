@@ -1,6 +1,8 @@
 package com.kcdevdes.synk.service;
 
+import com.kcdevdes.synk.dto.request.TransactionCreateDTO;
 import com.kcdevdes.synk.dto.request.TransactionUpdateDTO;
+import com.kcdevdes.synk.entity.AccountEntity;
 import com.kcdevdes.synk.entity.TransactionEntity;
 import com.kcdevdes.synk.entity.type.TransactionType;
 import com.kcdevdes.synk.exception.custom.InvalidInputException;
@@ -20,9 +22,31 @@ import java.util.List;
 public class TransactionService {
 
     private final TransactionRepository transactionRepository;
+    private final AccountService accountService;
 
     /**
-     * Save Transaction
+     * Create Transaction from DTO
+     * Sets Account and User from accountId in DTO
+     * @param dto TransactionCreateDTO
+     * @return saved TransactionEntity
+     */
+    @Transactional
+    public TransactionEntity createTransaction(TransactionCreateDTO dto) {
+        // Convert DTO to Entity
+        TransactionEntity entity = TransactionMapper.toEntity(dto);
+
+        // Fetch Account by accountId from DTO
+        AccountEntity account = accountService.getAccountById(dto.getAccountId());
+
+        // Set Account and User
+        entity.setAccount(account);
+        entity.setUser(account.getUser());
+
+        return transactionRepository.save(entity);
+    }
+
+    /**
+     * Save Transaction (Direct entity save)
      * @param entity
      * @return
      */

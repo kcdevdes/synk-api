@@ -102,8 +102,7 @@ public class TransactionControllerIntegrationTest {
         testTransaction = transactionRepository.save(testTransaction);
     }
 
-    // TODO: Fix TransactionService to handle accountId and userId from DTO
-    // @Test
+    @Test
     @DisplayName("POST /api/transactions - Create transaction successfully")
     void createTransaction_ShouldReturnCreated() throws Exception {
         TransactionCreateDTO createDTO = new TransactionCreateDTO();

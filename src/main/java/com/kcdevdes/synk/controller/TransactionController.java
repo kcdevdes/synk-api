@@ -27,8 +27,7 @@ public class TransactionController {
     public ResponseEntity<TransactionDTO> createTransaction(
             @Valid @RequestBody TransactionCreateDTO dto
     ) {
-        TransactionEntity entity = TransactionMapper.toEntity(dto);
-        TransactionEntity saved = transactionService.save(entity);
+        TransactionEntity saved = transactionService.createTransaction(dto);
         TransactionDTO responseDTO = TransactionMapper.toDTO(saved);
 
         return ResponseEntity
