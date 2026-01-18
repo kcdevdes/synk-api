@@ -2,8 +2,6 @@ package com.kcdevdes.synk.entity;
 
 import com.kcdevdes.synk.entity.type.AccountType;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;

@@ -1,5 +1,6 @@
 package com.kcdevdes.synk.entity;
 
+import com.kcdevdes.synk.entity.type.UserType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -48,6 +49,10 @@ public class UserEntity {
     @UpdateTimestamp
     @Column(nullable = false)
     private Instant updatedAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserType userType = UserType.USER;
 
     /**  Preference **/
 

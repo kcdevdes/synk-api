@@ -1,5 +1,7 @@
 package com.kcdevdes.synk.controller;
 
+import com.kcdevdes.synk.entity.type.UserType;
+import org.junit.jupiter.api.AfterEach;
 import tools.jackson.databind.ObjectMapper;
 import com.kcdevdes.synk.dto.request.UserCreateDTO;
 import com.kcdevdes.synk.dto.request.UserUpdateDTO;
@@ -56,6 +58,8 @@ class UserControllerIntegrationTest {
         testUser.setDefaultCurrency("USD");
         testUser.setLocale("en_US");
         testUser.setTimezone("America/New_York");
+        testUser.setUserType(UserType.USER);
+
         testUser = userRepository.save(testUser);
     }
 
