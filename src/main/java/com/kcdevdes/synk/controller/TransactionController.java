@@ -1,129 +1,130 @@
 package com.kcdevdes.synk.controller;
 
+import com.kcdevdes.synk.dto.request.TransactionCreateDTO;
+import com.kcdevdes.synk.dto.request.TransactionUpdateDTO;
+import com.kcdevdes.synk.dto.response.TransactionDTO;
 import com.kcdevdes.synk.entity.TransactionEntity;
-import com.kcdevdes.synk.entity.TransactionType;
-import com.kcdevdes.synk.form.TransactionCreateForm;
-import com.kcdevdes.synk.form.TransactionUpdateForm;
+import com.kcdevdes.synk.entity.type.TransactionType;
+import com.kcdevdes.synk.exception.custom.InvalidInputException;
+import com.kcdevdes.synk.mapper.TransactionMapper;
 import com.kcdevdes.synk.service.TransactionService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
-import java.util.Optional;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/transactions")
+@RequiredArgsConstructor
 public class TransactionController {
+
     private final TransactionService transactionService;
 
-    public TransactionController(TransactionService transactionService) {
-        this.transactionService = transactionService;
-    }
+    @PostMapping
+    public ResponseEntity<TransactionDTO> createTransaction(
+            @Valid @RequestBody TransactionCreateDTO dto
+    ) {
+        TransactionEntity saved = transactionService.createTransaction(dto);
+        TransactionDTO responseDTO = TransactionMapper.toDTO(saved);
 
-    @PostMapping("")
-    public ResponseEntity<?>  addNewTransaction(@Valid @RequestBody TransactionCreateForm form) {
-        try {
-            TransactionEntity newTransaction = convert(form);
-
-            TransactionEntity saved = this.transactionService.save(newTransaction);
-            return ResponseEntity.status(HttpStatus.CREATED).body(saved);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Invalid transaction type provided."));
-        } catch (NullPointerException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Missing required transaction data."));
-        }
-
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(responseDTO);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getTransactionById(@PathVariable("id") Long id) {
-        Optional<TransactionEntity> transactionEntity = this.transactionService.findById(id);
-        return transactionEntity
-                .map(ResponseEntity::<Object>ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("error", "Transaction not found.")));
+    public ResponseEntity<TransactionDTO> getTransaction(@PathVariable Long id) {
+        TransactionEntity entity = transactionService.findById(id);
+        TransactionDTO dto = TransactionMapper.toDTO(entity);
+
+        return ResponseEntity.ok(dto);
     }
 
-    @GetMapping("")
-    public ResponseEntity<Iterable<TransactionEntity>> getAllTransactions() {
-        Iterable<TransactionEntity> all = this.transactionService.findAll();
-        return ResponseEntity.ok(all);
+    @GetMapping
+    public ResponseEntity<List<TransactionDTO>> getAllTransactions() {
+        List<TransactionEntity> entities = transactionService.findAll();
+        List<TransactionDTO> dtos = TransactionMapper.toDTOList(entities);
+
+        return ResponseEntity.ok(dtos);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateTransaction(@PathVariable("id") Long id, @RequestBody TransactionUpdateForm form) {
-        if (form == null) {
-            return ResponseEntity.badRequest().body(Map.of("error", "empty body request"));
-        }
-        Optional<TransactionEntity> result = this.transactionService.updateById(id, convert(form));
+    public ResponseEntity<TransactionDTO> updateTransaction(
+            @PathVariable Long id,
+            @Valid @RequestBody TransactionUpdateDTO dto
+    ) {
+        TransactionEntity updated = transactionService.updateById(id, dto);
+        TransactionDTO responseDTO = TransactionMapper.toDTO(updated);
 
-        return result
-                .map(ResponseEntity::<Object>ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("error", "Transaction not found.")));
+        return ResponseEntity.ok(responseDTO);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteTransaction(@PathVariable("id") Long id) {
-        Optional<TransactionEntity> result= this.transactionService.deleteById(id);
+    public ResponseEntity<Void> deleteTransaction(@PathVariable Long id) {
+        transactionService.deleteById(id);
 
-        return result
-                .map(ResponseEntity::<Object>ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("error", "Transaction not found.")));
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/search")
-    public ResponseEntity<?> searchTransactions(@RequestParam("query") String query) {
-        if (query == null || query.isBlank()) {
-            return ResponseEntity.badRequest().build();
-        }
+    public ResponseEntity<List<TransactionDTO>> searchTransactions(
+            @RequestParam String query
+    ) {
+        List<TransactionEntity> results = transactionService.searchTransactionsByMerchant(query);
+        List<TransactionDTO> dtos = TransactionMapper.toDTOList(results);
 
-        List<TransactionEntity> results = this.transactionService.searchTransactionsByMerchant(query);
-
-        return ResponseEntity.ok().body(results);
+        return ResponseEntity.ok(dtos);
     }
 
     @GetMapping("/filter")
-    public ResponseEntity<?> filterTransactions(@RequestParam("query") String query) {
-        if (query == null || query.isBlank()) {
-            return ResponseEntity.badRequest().build();
-        }
+    public ResponseEntity<List<TransactionDTO>> filterTransactions(
+            @RequestParam String type
+    ) {
+        List<TransactionEntity> results = transactionService.filterTransactionByType(type);
+        List<TransactionDTO> dtos = TransactionMapper.toDTOList(results);
 
-        List<TransactionEntity> results = this.transactionService.filterTransactionByType(query);
-
-        return ResponseEntity.ok().body(results);
+        return ResponseEntity.ok(dtos);
     }
 
-    private TransactionEntity convert(TransactionCreateForm form) {
-        TransactionEntity entity = new TransactionEntity();
-        entity.setType(TransactionType.valueOf(form.getType()));
-        entity.setAmount(form.getAmount());
-        entity.setMerchant(form.getMerchant());
-        entity.setDescription(form.getDescription());
-        return entity;
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<TransactionDTO>> getTransactionsByUser(
+            @PathVariable Long userId
+    ) {
+        List<TransactionEntity> entities = transactionService.findByUserId(userId);
+        List<TransactionDTO> dtos = TransactionMapper.toDTOList(entities);
+
+        return ResponseEntity.ok(dtos);
     }
 
-    private TransactionEntity convert(TransactionUpdateForm form) {
-        TransactionEntity entity = new TransactionEntity();
+    @GetMapping("/account/{accountId}")
+    public ResponseEntity<List<TransactionDTO>> getTransactionsByAccount(
+            @PathVariable Long accountId
+    ) {
+        List<TransactionEntity> entities = transactionService.findByAccountId(accountId);
+        List<TransactionDTO> dtos = TransactionMapper.toDTOList(entities);
 
-        if (form.getType() != null) {
-            entity.setType(TransactionType.valueOf(form.getType()));
-        }
-        if (form.getAmount() != null) {
-            entity.setAmount(form.getAmount());
-        }
-        if (form.getMerchant() != null) {
-            entity.setMerchant(form.getMerchant());
-        }
-        if (form.getDescription() != null) {
-            entity.setDescription(form.getDescription());
-        }
-
-        return entity;
+        return ResponseEntity.ok(dtos);
     }
 
+    @GetMapping("/user/{userId}/type/{type}")
+    public ResponseEntity<List<TransactionDTO>> getTransactionsByUserAndType(
+            @PathVariable Long userId,
+            @PathVariable String type
+    ) {
+        TransactionType transactionType;
+        try {
+            transactionType = TransactionType.valueOf(type.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw InvalidInputException.transactionType(type);
+        }
+
+        List<TransactionEntity> entities = transactionService.findByUserIdAndType(userId, transactionType);
+
+        List<TransactionDTO> dtos = TransactionMapper.toDTOList(entities);
+
+        return ResponseEntity.ok(dtos);
+    }
 }

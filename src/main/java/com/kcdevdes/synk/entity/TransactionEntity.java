@@ -1,16 +1,14 @@
 package com.kcdevdes.synk.entity;
 
+import com.kcdevdes.synk.entity.type.PaymentMethod;
+import com.kcdevdes.synk.entity.type.TransactionType;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 
+import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.Date;
 
 @Entity
 @Table(name = "transactions")
@@ -22,29 +20,66 @@ public class TransactionEntity {
     private Long id;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private TransactionType type;
-    private Double amount;
+
+    @Column(nullable = false, precision = 15, scale = 2)
+    private BigDecimal amount;
+
+    @Column(nullable = false, length = 128)
+    private String merchant;
+
+    /// Currency Details ///
+
+    @Column(nullable = false, length = 3) // ISO 4217
+    private String currency = "USD";
+
+    @Column(precision = 15, scale = 2)
+    private BigDecimal originalAmount;
+
+    @Column(length = 3)
+    private String originalCurrency; // Example: "KRW" -> USD
+
+    @Column
+    private BigDecimal currencyExchangeRate;
+
+    /// Payment ///
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private PaymentMethod paymentMethod;
+
+    ///  TimeStamps ///
 
     @CreationTimestamp
+    @Column(nullable = false, updatable = false)
     private Instant occurredAt;
+
     @UpdateTimestamp
     private Instant updatedAt;
 
-    private String merchant;
+    @Column
+    private Instant deletedAt;
+
+    @Column(nullable = false) // Soft Deletion
+    private Boolean deleted = false;
+
+    /// Metadata ///
+
+    @Column(length = 256)
+    private String tags; // Comma separated tags
+
+    @Column(length = 512)
     private String description;
 
-    @Override
-    public String toString() {
-        return "TransactionEntity{" +
-                "id=" + id +
-                ", type=" + type +
-                ", amount=" + amount +
-                ", occurredAt=" + occurredAt +
-                ", updatedAt=" + updatedAt +
-                ", merchant='" + merchant + '\'' +
-                ", description='" + description + '\'' +
-                '}';
-    }
+    @Column(length = 64)
+    private String category;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserEntity user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "account_id")
+    private AccountEntity account;
 }
