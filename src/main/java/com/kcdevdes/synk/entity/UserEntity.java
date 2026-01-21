@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+//import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.time.Instant;
 
@@ -109,4 +110,10 @@ public class UserEntity {
     public boolean canLogin() {
         return !isAccountLocked() && active && !deleted;
     }
+
+    // TODO : Password Dependency 졸라 짜증나게 만들어놨으 :)
+//    public String encryptPassword(String original) {
+//        String encrypted = BCrypt.hashpw(original, BCrypt.gensalt());
+//        return encrypted;
+//    }
 }

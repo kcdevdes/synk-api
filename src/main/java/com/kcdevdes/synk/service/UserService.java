@@ -8,7 +8,9 @@ import com.kcdevdes.synk.exception.custom.InvalidInputException;
 import com.kcdevdes.synk.exception.custom.ResourceNotFoundException;
 import com.kcdevdes.synk.mapper.UserMapper;
 import com.kcdevdes.synk.repository.UserRepository;
+import com.kcdevdes.synk.logger.AuditLogger;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,9 +19,11 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
 
     private final UserRepository userRepository;
+    private final AuditLogger auditLogger;
 
     /**
      * Get User By Id
@@ -88,6 +92,10 @@ public class UserService {
             throw DuplicateResourceException.username(user.getUsername());
         }
 
+        // Encrypt password before saving
+//        user.setPassword(user.encryptPassword(user.getPassword()));
+        log.info("Creating new user with username: {}", user.getUsername());
+        auditLogger.logTransactionCreated(user.getId(), null, "User created: " + user.getUsername());
         return userRepository.save(user);
     }
 
@@ -202,7 +210,7 @@ public class UserService {
     @Transactional
     public void resetPassword(String token, String newPassword) {
         UserEntity user = validatePasswordResetToken(token);
-        user.setPassword(newPassword);
+//        user.setPassword(user.encryptPassword(newPassword));
         user.setResetPasswordToken(null);
         user.setResetPasswordTokenExpiresAt(null);
         user.setFailedLoginAttempts(0);
