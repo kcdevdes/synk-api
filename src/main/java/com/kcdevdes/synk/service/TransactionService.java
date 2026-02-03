@@ -7,7 +7,6 @@ import com.kcdevdes.synk.entity.TransactionEntity;
 import com.kcdevdes.synk.entity.type.TransactionType;
 import com.kcdevdes.synk.exception.custom.InvalidInputException;
 import com.kcdevdes.synk.exception.custom.ResourceNotFoundException;
-import com.kcdevdes.synk.logger.AuditLogger;
 import com.kcdevdes.synk.mapper.TransactionMapper;
 import com.kcdevdes.synk.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +23,6 @@ public class TransactionService {
 
     private final TransactionRepository transactionRepository;
     private final AccountService accountService;
-    private final AuditLogger auditLogger;
 
     /**
      * Create Transaction from DTO
@@ -44,12 +42,7 @@ public class TransactionService {
         entity.setAccount(account);
         entity.setUser(account.getUser());
 
-        TransactionEntity saved = transactionRepository.save(entity);
-
-        // Audit log
-        auditLogger.logTransactionCreated(saved.getId(), saved.getAccount() != null ? saved.getAccount().getId() : null, "Transaction created");
-
-        return saved;
+        return transactionRepository.save(entity);
     }
 
     /**
@@ -92,12 +85,7 @@ public class TransactionService {
         TransactionEntity existing = findById(id);
         TransactionMapper.updateEntity(existing, dto);
 
-        TransactionEntity updated = transactionRepository.save(existing);
-
-        // Audit log
-        auditLogger.logTransactionUpdated(updated.getId(), updated.getAccount() != null ? updated.getAccount().getId() : null, "Transaction updated");
-
-        return updated;
+        return transactionRepository.save(existing);
     }
 
     /**
@@ -114,9 +102,6 @@ public class TransactionService {
         existing.setDeletedAt(Instant.now());
 
         transactionRepository.save(existing);
-
-        // Audit log
-        auditLogger.logTransactionDeleted(existing.getId(), existing.getAccount() != null ? existing.getAccount().getId() : null);
     }
 
     /**
@@ -130,12 +115,7 @@ public class TransactionService {
             throw InvalidInputException.currency("Merchant query cannot be empty");
         }
 
-        List<TransactionEntity> results = transactionRepository.findByMerchantContainingIgnoreCase(merchant);
-
-        // Audit log
-        auditLogger.logSearchOperation(null, "merchant:" + merchant, results.size());
-
-        return results;
+        return transactionRepository.findByMerchantContainingIgnoreCase(merchant);
     }
 
     /**
@@ -156,12 +136,7 @@ public class TransactionService {
             throw InvalidInputException.transactionType(typeString);
         }
 
-        List<TransactionEntity> results = transactionRepository.findByType(type);
-
-        // Audit log
-        auditLogger.logSearchOperation(null, "type:" + typeString, results.size());
-
-        return results;
+        return transactionRepository.findByType(type);
     }
 
     /**
