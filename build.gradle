@@ -35,6 +35,14 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testRuntimeOnly 'com.h2database:h2'
+
+    // SECURITY
+    // implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    // LOGGING
+    implementation 'org.springframework.boot:spring-boot-starter-logging'
+    implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
+    implementation 'org.slf4j:slf4j-api'
 }
 
 tasks.named('test') {
