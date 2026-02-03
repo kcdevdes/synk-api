@@ -11,6 +11,7 @@ import com.kcdevdes.synk.exception.custom.UnauthorizedException;
 import com.kcdevdes.synk.mapper.AccountMapper;
 import com.kcdevdes.synk.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +21,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AccountService {
 
     private final AccountRepository accountRepository;
@@ -81,6 +83,7 @@ public class AccountService {
      */
     @Transactional
     public AccountEntity createAccount(AccountEntity account, Long userId) {
+        log.info("event=account_create_start userId={}", userId);
         UserEntity user = userService.getUserById(userId);
         account.setUser(user);
 
@@ -96,7 +99,9 @@ public class AccountService {
             );
         }
 
-        return accountRepository.save(account);
+        AccountEntity saved = accountRepository.save(account);
+        log.info("event=account_create_success accountId={} userId={}", saved.getId(), userId);
+        return saved;
     }
 
     /**
@@ -109,9 +114,12 @@ public class AccountService {
      */
     @Transactional
     public AccountEntity updateAccount(Long accountId, Long userId, AccountUpdateDTO dto) {
+        log.info("event=account_update_start accountId={} userId={}", accountId, userId);
         AccountEntity account = getAccountByIdAndUserId(accountId, userId);
         AccountMapper.updateEntity(account, dto);
-        return accountRepository.save(account);
+        AccountEntity saved = accountRepository.save(account);
+        log.info("event=account_update_success accountId={} userId={}", saved.getId(), userId);
+        return saved;
     }
 
     /**
@@ -122,6 +130,7 @@ public class AccountService {
      */
     @Transactional
     public void deleteAccount(Long accountId, Long userId) {
+        log.info("event=account_delete_start accountId={} userId={}", accountId, userId);
         AccountEntity account = getAccountByIdAndUserId(accountId, userId);
 
         account.setDeleted(true);
@@ -129,6 +138,7 @@ public class AccountService {
         account.setActive(false);
 
         accountRepository.save(account);
+        log.info("event=account_delete_success accountId={} userId={}", accountId, userId);
     }
 
     /**
@@ -141,6 +151,7 @@ public class AccountService {
      */
     @Transactional
     public AccountEntity deposit(Long accountId, Long userId, BigDecimal amount) {
+        log.info("event=account_deposit_start accountId={} userId={}", accountId, userId);
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new InvalidInputException(
                     ErrorCode.INVALID_INPUT_VALUE,
@@ -151,7 +162,9 @@ public class AccountService {
         AccountEntity account = getAccountByIdAndUserId(accountId, userId);
         account.deposit(amount);
         account.setLastTransactionAt(Instant.now());
-        return accountRepository.save(account);
+        AccountEntity saved = accountRepository.save(account);
+        log.info("event=account_deposit_success accountId={} userId={}", accountId, userId);
+        return saved;
     }
 
     /**
@@ -164,6 +177,7 @@ public class AccountService {
      */
     @Transactional
     public AccountEntity withdraw(Long accountId, Long userId, BigDecimal amount) {
+        log.info("event=account_withdraw_start accountId={} userId={}", accountId, userId);
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new InvalidInputException(
                     ErrorCode.INVALID_INPUT_VALUE,
@@ -182,7 +196,9 @@ public class AccountService {
 
         account.withdraw(amount);
         account.setLastTransactionAt(Instant.now());
-        return accountRepository.save(account);
+        AccountEntity saved = accountRepository.save(account);
+        log.info("event=account_withdraw_success accountId={} userId={}", accountId, userId);
+        return saved;
     }
 
     /**
