@@ -4,6 +4,7 @@ import com.kcdevdes.synk.dto.request.UserCreateDTO;
 import com.kcdevdes.synk.dto.request.UserUpdateDTO;
 import com.kcdevdes.synk.dto.response.UserDTO;
 import com.kcdevdes.synk.entity.UserEntity;
+import com.kcdevdes.synk.util.InputSanitizer;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -33,37 +34,37 @@ public class UserMapper {
 
     public static UserEntity toEntity(UserCreateDTO dto) {
         UserEntity entity = new UserEntity();
-        entity.setEmail(dto.getEmail());
-        entity.setUsername(dto.getUsername());
+        entity.setEmail(InputSanitizer.sanitizePlainText(dto.getEmail(), "email"));
+        entity.setUsername(InputSanitizer.sanitizePlainText(dto.getUsername(), "username"));
         entity.setPassword(dto.getPassword()); // 주의: 실제로는 BCrypt 해싱 필요
-        entity.setFirstName(dto.getFirstName());
-        entity.setLastName(dto.getLastName());
-        entity.setMobile(dto.getMobile());
+        entity.setFirstName(InputSanitizer.sanitizePlainText(dto.getFirstName(), "firstName"));
+        entity.setLastName(InputSanitizer.sanitizePlainText(dto.getLastName(), "lastName"));
+        entity.setMobile(InputSanitizer.sanitizePlainText(dto.getMobile(), "mobile"));
         entity.setDefaultCurrency(dto.getDefaultCurrency());
-        entity.setLocale(dto.getLocale());
-        entity.setTimezone(dto.getTimezone());
+        entity.setLocale(InputSanitizer.sanitizePlainText(dto.getLocale(), "locale"));
+        entity.setTimezone(InputSanitizer.sanitizePlainText(dto.getTimezone(), "timezone"));
 
         return entity;
     }
 
     public static void updateEntity(UserEntity entity, UserUpdateDTO dto) {
         if (dto.getFirstName() != null) {
-            entity.setFirstName(dto.getFirstName());
+            entity.setFirstName(InputSanitizer.sanitizePlainText(dto.getFirstName(), "firstName"));
         }
         if (dto.getLastName() != null) {
-            entity.setLastName(dto.getLastName());
+            entity.setLastName(InputSanitizer.sanitizePlainText(dto.getLastName(), "lastName"));
         }
         if (dto.getMobile() != null) {
-            entity.setMobile(dto.getMobile());
+            entity.setMobile(InputSanitizer.sanitizePlainText(dto.getMobile(), "mobile"));
         }
         if (dto.getDefaultCurrency() != null) {
             entity.setDefaultCurrency(dto.getDefaultCurrency());
         }
         if (dto.getLocale() != null) {
-            entity.setLocale(dto.getLocale());
+            entity.setLocale(InputSanitizer.sanitizePlainText(dto.getLocale(), "locale"));
         }
         if (dto.getTimezone() != null) {
-            entity.setTimezone(dto.getTimezone());
+            entity.setTimezone(InputSanitizer.sanitizePlainText(dto.getTimezone(), "timezone"));
         }
     }
 

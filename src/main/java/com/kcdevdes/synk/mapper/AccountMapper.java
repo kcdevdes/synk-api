@@ -5,6 +5,7 @@ import com.kcdevdes.synk.dto.request.AccountUpdateDTO;
 import com.kcdevdes.synk.dto.response.AccountDTO;
 import com.kcdevdes.synk.entity.AccountEntity;
 import com.kcdevdes.synk.entity.type.AccountType;
+import com.kcdevdes.synk.util.InputSanitizer;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -36,25 +37,25 @@ public class AccountMapper {
         // AccountType 변환 (String → Enum)
         entity.setAccountType(AccountType.valueOf(dto.getAccountType()));
 
-        entity.setAccountName(dto.getAccountName());
+        entity.setAccountName(InputSanitizer.sanitizePlainText(dto.getAccountName(), "accountName"));
         entity.setCurrency(dto.getCurrency());
         entity.setBalance(dto.getBalance());
-        entity.setAccountNumber(dto.getAccountNumber());
-        entity.setBankName(dto.getBankName());
-        entity.setDescription(dto.getDescription());
+        entity.setAccountNumber(InputSanitizer.sanitizePlainText(dto.getAccountNumber(), "accountNumber"));
+        entity.setBankName(InputSanitizer.sanitizePlainText(dto.getBankName(), "bankName"));
+        entity.setDescription(InputSanitizer.sanitizePlainText(dto.getDescription(), "description"));
 
         return entity;
     }
 
     public static void updateEntity(AccountEntity entity, AccountUpdateDTO dto) {
         if (dto.getAccountName() != null) {
-            entity.setAccountName(dto.getAccountName());
+            entity.setAccountName(InputSanitizer.sanitizePlainText(dto.getAccountName(), "accountName"));
         }
         if (dto.getBalance() != null) {
             entity.setBalance(dto.getBalance());
         }
         if (dto.getDescription() != null) {
-            entity.setDescription(dto.getDescription());
+            entity.setDescription(InputSanitizer.sanitizePlainText(dto.getDescription(), "description"));
         }
         if (dto.getActive() != null) {
             entity.setActive(dto.getActive());

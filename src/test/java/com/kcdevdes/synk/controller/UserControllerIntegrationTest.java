@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import static org.hamcrest.Matchers.*;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -44,7 +45,9 @@ class UserControllerIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
+                .apply(springSecurity())
+                .build();
 
         userRepository.deleteAll();
 
@@ -108,6 +111,20 @@ class UserControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email", is("test@example.com")))
                 .andExpect(jsonPath("$.username", is("testuser")));
+    }
+
+    @Test
+    @DisplayName("GET /api/users - Security headers present")
+    void getAllUsers_ShouldIncludeSecurityHeaders() throws Exception {
+        mockMvc.perform(get("/api/users"))
+                .andExpect(status().isOk())
+                .andExpect(header().exists("Content-Security-Policy"))
+                .andExpect(header().string("X-Frame-Options", "DENY"))
+                .andExpect(header().string("X-Content-Type-Options", "nosniff"))
+                .andExpect(header().string("Referrer-Policy", "strict-origin-when-cross-origin"))
+                .andExpect(header().string("Permissions-Policy", "geolocation=(), microphone=(), camera=()"))
+                .andExpect(header().string("X-XSS-Protection", "1; mode=block"))
+                .andExpect(header().doesNotExist("Strict-Transport-Security"));
     }
 
     @Test

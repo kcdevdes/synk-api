@@ -27,6 +27,7 @@ public class UserCreateDTO {
 
     @NotBlank
     @Size(min = 4, max = 64)
+    @Pattern(regexp = "^[A-Za-z0-9_.-]+$")
     private String username;
 
     @NotBlank
@@ -34,15 +35,19 @@ public class UserCreateDTO {
     private String password;
 
     @NotBlank
+    @Pattern(regexp = "^[A-Za-z .'-]+$")
     private String firstName;
 
     @NotBlank
+    @Pattern(regexp = "^[A-Za-z .'-]+$")
     private String lastName;
 
     @Pattern(regexp = "^\\+?[0-9]{10,15}$")
     private String mobile;
 
     @NotNull
+    @Size(min = 3, max = 3)
+    @Pattern(regexp = "^[A-Z]{3}$")
     private String defaultCurrency = "USD";
 
     private String locale;

@@ -22,6 +22,8 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class AccountCreateDTO {
     @NotBlank
+    @Size(max = 128)
+    @Pattern(regexp = "^[A-Za-z0-9 .\\-']+$")
     private String accountName;
 
     @NotBlank @Pattern(regexp = "BANK_ACCOUNT|CREDIT_CARD|CASH|WALLET")
@@ -36,11 +38,14 @@ public class AccountCreateDTO {
     private BigDecimal balance;
 
     @Size(max = 32)
+    @Pattern(regexp = "^[A-Za-z0-9\\-]*$")
     private String accountNumber;
 
     @Size(max = 32)
+    @Pattern(regexp = "^[A-Za-z0-9 .\\-']*$")
     private String bankName;
 
     @Size(max = 512)
+    @Pattern(regexp = "^[^<>]*$")
     private String description;
 }

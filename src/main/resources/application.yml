@@ -20,3 +20,13 @@ spring:
     pattern:
       console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
       file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+app:
+  security:
+    csrf:
+      enabled: false
+    hsts:
+      enabled: false
+    cors:
+      allowed-origins: "http://localhost:3000,http://localhost:8080"
+      allow-credentials: true

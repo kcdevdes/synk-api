@@ -6,6 +6,7 @@ import com.kcdevdes.synk.dto.response.TransactionDTO;
 import com.kcdevdes.synk.entity.TransactionEntity;
 import com.kcdevdes.synk.entity.type.PaymentMethod;
 import com.kcdevdes.synk.entity.type.TransactionType;
+import com.kcdevdes.synk.util.InputSanitizer;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -49,11 +50,11 @@ public class TransactionMapper {
         entity.setType(TransactionType.valueOf(dto.getType()));
 
         entity.setAmount(dto.getAmount());
-        entity.setMerchant(dto.getMerchant());
+        entity.setMerchant(InputSanitizer.sanitizePlainText(dto.getMerchant(), "merchant"));
         entity.setCurrency(dto.getCurrency());
-        entity.setCategory(dto.getCategory());
-        entity.setDescription(dto.getDescription());
-        entity.setTags(dto.getTags());
+        entity.setCategory(InputSanitizer.sanitizePlainText(dto.getCategory(), "category"));
+        entity.setDescription(InputSanitizer.sanitizePlainText(dto.getDescription(), "description"));
+        entity.setTags(InputSanitizer.sanitizePlainText(dto.getTags(), "tags"));
 
         // PaymentMethod 변환 (String → Enum)
         if (dto.getPaymentMethod() != null) {
@@ -73,16 +74,16 @@ public class TransactionMapper {
             entity.setAmount(dto.getAmount());
         }
         if (dto.getMerchant() != null) {
-            entity.setMerchant(dto.getMerchant());
+            entity.setMerchant(InputSanitizer.sanitizePlainText(dto.getMerchant(), "merchant"));
         }
         if (dto.getCategory() != null) {
-            entity.setCategory(dto.getCategory());
+            entity.setCategory(InputSanitizer.sanitizePlainText(dto.getCategory(), "category"));
         }
         if (dto.getDescription() != null) {
-            entity.setDescription(dto.getDescription());
+            entity.setDescription(InputSanitizer.sanitizePlainText(dto.getDescription(), "description"));
         }
         if (dto.getTags() != null) {
-            entity.setTags(dto.getTags());
+            entity.setTags(InputSanitizer.sanitizePlainText(dto.getTags(), "tags"));
         }
     }
 

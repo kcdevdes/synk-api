@@ -9,6 +9,7 @@ import com.kcdevdes.synk.exception.custom.InvalidInputException;
 import com.kcdevdes.synk.exception.custom.ResourceNotFoundException;
 import com.kcdevdes.synk.mapper.TransactionMapper;
 import com.kcdevdes.synk.repository.TransactionRepository;
+import com.kcdevdes.synk.util.InputSanitizer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -115,7 +116,8 @@ public class TransactionService {
             throw InvalidInputException.currency("Merchant query cannot be empty");
         }
 
-        return transactionRepository.findByMerchantContainingIgnoreCase(merchant);
+        String sanitized = InputSanitizer.sanitizePlainText(merchant, "merchantQuery");
+        return transactionRepository.findByMerchantContainingIgnoreCase(sanitized);
     }
 
     /**

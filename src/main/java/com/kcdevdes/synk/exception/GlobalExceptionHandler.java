@@ -2,6 +2,8 @@ package com.kcdevdes.synk.exception;
 
 import com.kcdevdes.synk.dto.common.ErrorResponse;
 import com.kcdevdes.synk.exception.custom.*;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -56,6 +58,35 @@ public class GlobalExceptionHandler {
         });
 
         log.warn("Validation failed: fields={}, path={}",
+                fieldErrors.keySet(), request.getRequestURI());
+
+        ErrorResponse response = new ErrorResponse(
+                "E1001",
+                "Validation failed",
+                Instant.now(),
+                request.getRequestURI(),
+                fieldErrors
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(response);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolation(
+            ConstraintViolationException ex,
+            HttpServletRequest request
+    ) {
+        Map<String, String> fieldErrors = new HashMap<>();
+
+        for (ConstraintViolation<?> violation : ex.getConstraintViolations()) {
+            String path = violation.getPropertyPath() != null ? violation.getPropertyPath().toString() : "param";
+            String fieldName = path.contains(".") ? path.substring(path.lastIndexOf('.') + 1) : path;
+            fieldErrors.put(fieldName, violation.getMessage());
+        }
+
+        log.warn("Constraint violation: fields={}, path={}",
                 fieldErrors.keySet(), request.getRequestURI());
 
         ErrorResponse response = new ErrorResponse(
