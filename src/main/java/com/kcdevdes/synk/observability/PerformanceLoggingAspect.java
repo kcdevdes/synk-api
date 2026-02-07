@@ -1,11 +1,11 @@
 package com.kcdevdes.synk.observability;
 
+import com.kcdevdes.synk.config.properties.AppLoggingProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -15,10 +15,8 @@ public class PerformanceLoggingAspect {
 
     private final long slowThresholdMs;
 
-    public PerformanceLoggingAspect(
-            @Value("${app.logging.slow-threshold-ms:500}") long slowThresholdMs
-    ) {
-        this.slowThresholdMs = slowThresholdMs;
+    public PerformanceLoggingAspect(AppLoggingProperties appLoggingProperties) {
+        this.slowThresholdMs = appLoggingProperties.getSlowThresholdMs();
     }
 
     @Around("execution(* com.kcdevdes.synk.service..*(..)) || execution(* com.kcdevdes.synk.repository..*(..))")
