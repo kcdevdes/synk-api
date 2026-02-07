@@ -9,9 +9,12 @@ import com.kcdevdes.synk.exception.custom.InvalidInputException;
 import com.kcdevdes.synk.mapper.TransactionMapper;
 import com.kcdevdes.synk.service.TransactionService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +22,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/transactions")
 @RequiredArgsConstructor
+@Validated
 public class TransactionController {
 
     private final TransactionService transactionService;
@@ -71,7 +75,10 @@ public class TransactionController {
 
     @GetMapping("/search")
     public ResponseEntity<List<TransactionDTO>> searchTransactions(
-            @RequestParam String query
+            @RequestParam
+            @Size(min = 1, max = 128)
+            @Pattern(regexp = "^[A-Za-z0-9 .\\-']+$")
+            String query
     ) {
         List<TransactionEntity> results = transactionService.searchTransactionsByMerchant(query);
         List<TransactionDTO> dtos = TransactionMapper.toDTOList(results);
@@ -81,7 +88,9 @@ public class TransactionController {
 
     @GetMapping("/filter")
     public ResponseEntity<List<TransactionDTO>> filterTransactions(
-            @RequestParam String type
+            @RequestParam
+            @Pattern(regexp = "INCOME|EXPENSE|TRANSFER")
+            String type
     ) {
         List<TransactionEntity> results = transactionService.filterTransactionByType(type);
         List<TransactionDTO> dtos = TransactionMapper.toDTOList(results);

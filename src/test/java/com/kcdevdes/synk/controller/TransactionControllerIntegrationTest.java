@@ -26,6 +26,7 @@ import tools.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 
 import static org.hamcrest.Matchers.*;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -58,7 +59,9 @@ public class TransactionControllerIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
+                .apply(springSecurity())
+                .build();
 
         transactionRepository.deleteAll();
         accountRepository.deleteAll();
@@ -219,6 +222,14 @@ public class TransactionControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("GET /api/transactions/search?query= - Suspicious query should fail")
+    void searchTransactionsByMerchant_SuspiciousQuery_ShouldFail() throws Exception {
+        mockMvc.perform(get("/api/transactions/search")
+                        .param("query", "<script>alert(1)</script>"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     @DisplayName("GET /api/transactions/filter?type={type} - Filter by type")
     void filterTransactionsByType_ShouldReturnResults() throws Exception {
         mockMvc.perform(get("/api/transactions/filter")
@@ -278,6 +289,26 @@ public class TransactionControllerIntegrationTest {
     void getTransactionsByUserAndType_InvalidType_ShouldFail() throws Exception {
         mockMvc.perform(get("/api/transactions/user/{userId}/type/{type}",
                         testUser.getId(), "INVALID_TYPE"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("POST /api/transactions - Suspicious merchant should fail")
+    void createTransaction_SuspiciousMerchant_ShouldFail() throws Exception {
+        TransactionCreateDTO createDTO = new TransactionCreateDTO();
+        createDTO.setType("INCOME");
+        createDTO.setAmount(BigDecimal.valueOf(500));
+        createDTO.setMerchant("<script>alert(1)</script>");
+        createDTO.setCurrency("USD");
+        createDTO.setCategory("Salary");
+        createDTO.setDescription("Monthly salary");
+        createDTO.setTags("income,salary");
+        createDTO.setPaymentMethod("BANK_TRANSFER");
+        createDTO.setAccountId(testAccount.getId());
+
+        mockMvc.perform(post("/api/transactions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createDTO)))
                 .andExpect(status().isBadRequest());
     }
 }
