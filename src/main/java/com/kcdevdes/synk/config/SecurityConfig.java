@@ -1,52 +1,36 @@
 package com.kcdevdes.synk.config;
 
-import org.springframework.beans.factory.annotation.Value;
+import com.kcdevdes.synk.config.properties.AppSecurityProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.header.writers.XXssProtectionHeaderWriter;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
+import org.springframework.security.web.header.writers.XXssProtectionHeaderWriter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final boolean csrfEnabled;
-    private final boolean hstsEnabled;
-    private final String allowedOrigins;
-    private final boolean allowCredentials;
+    private final AppSecurityProperties securityProperties;
 
-    public SecurityConfig(
-            @Value("${app.security.csrf.enabled:true}") boolean csrfEnabled,
-            @Value("${app.security.hsts.enabled:true}") boolean hstsEnabled,
-            @Value("${app.security.cors.allowed-origins:http://localhost:3000,http://localhost:8080}") String allowedOrigins,
-            @Value("${app.security.cors.allow-credentials:true}") boolean allowCredentials
-    ) {
-        this.csrfEnabled = csrfEnabled;
-        this.hstsEnabled = hstsEnabled;
-        this.allowedOrigins = allowedOrigins;
-        this.allowCredentials = allowCredentials;
+    public SecurityConfig(AppSecurityProperties securityProperties) {
+        this.securityProperties = securityProperties;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> {
-                    if (csrfEnabled) {
+                    if (securityProperties.getCsrf().isEnabled()) {
                         csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
                     } else {
                         csrf.disable();
@@ -58,11 +42,11 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .headers(headers -> {
-                    if (hstsEnabled) {
+                    if (securityProperties.getHsts().isEnabled()) {
                         headers.httpStrictTransportSecurity(hsts -> hsts
                                 .includeSubDomains(true)
                                 .preload(true)
-                                .maxAgeInSeconds(31536000));
+                                .maxAgeInSeconds(securityProperties.getHsts().getMaxAgeSeconds()));
                     } else {
                         headers.httpStrictTransportSecurity(hsts -> hsts.disable());
                     }
@@ -89,38 +73,17 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+        AppSecurityProperties.Cors cors = securityProperties.getCors();
+
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(parseOrigins(allowedOrigins));
-        configuration.setAllowedMethods(List.of(
-                HttpMethod.GET.name(),
-                HttpMethod.POST.name(),
-                HttpMethod.PUT.name(),
-                HttpMethod.DELETE.name(),
-                HttpMethod.OPTIONS.name()
-        ));
-        configuration.setAllowedHeaders(List.of(
-                "Authorization",
-                "Content-Type",
-                "X-Requested-With",
-                "X-CSRF-TOKEN",
-                "X-XSRF-TOKEN",
-                "X-Request-Id"
-        ));
-        configuration.setAllowCredentials(allowCredentials);
-        configuration.setMaxAge(3600L);
+        configuration.setAllowedOrigins(cors.getAllowedOrigins());
+        configuration.setAllowedMethods(cors.getAllowedMethods());
+        configuration.setAllowedHeaders(cors.getAllowedHeaders());
+        configuration.setAllowCredentials(cors.isAllowCredentials());
+        configuration.setMaxAge(cors.getMaxAgeSeconds());
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
-    }
-
-    private List<String> parseOrigins(String origins) {
-        if (origins == null || origins.isBlank()) {
-            return List.of();
-        }
-        return Arrays.stream(origins.split(","))
-                .map(String::trim)
-                .filter(value -> !value.isBlank())
-                .collect(Collectors.toList());
     }
 }
